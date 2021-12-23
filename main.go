@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"speedtracker/speedtrackertypes"
+
+	"github.com/RedmondK/speedtracker/speedtrackertypes"
 )
 
 func main() {  
