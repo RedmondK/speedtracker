@@ -4,6 +4,6 @@ import "time"
 
 type Session struct {
 	Protocol string `json:"protocol"`
-	SessionDate time.Time `json:"sessionDate"`
+	Date time.Time `json:"date"`
 	Swings      []Swing   `json:"swings"`
 }
