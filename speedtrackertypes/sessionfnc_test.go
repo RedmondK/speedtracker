@@ -153,12 +153,14 @@ func TestUpdateMultiplePB(t *testing.T) {
 
 	testTime := time.Now()
 	testPBs := []PersonalBest {}
+	oldDate, _ := time.Parse(time.RFC3339, "2021-01-01T22:45:02Z")
 	
 	testPBs = append(testPBs, PersonalBest{ Date: time.Now(), Swing: Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 140 } })
 	testPBs = append(testPBs, PersonalBest{ Date: time.Now(), Swing: Swing { Side: "non-dominant", Colour: "blue", Position: "normal", Speed: 115 } })
 	testPBs = append(testPBs, PersonalBest{ Date: time.Now(), Swing: Swing { Side: "dominant", Colour: "red", Position: "happy gilmore", Speed: 123 } })
 	testPBs = append(testPBs, PersonalBest{ Date: time.Now(), Swing: Swing { Side: "non-dominant", Colour: "red", Position: "max out", Speed: 122 } })
 	testPBs = append(testPBs, PersonalBest{ Date: time.Now(), Swing: Swing { Side: "dominant", Colour: "green", Position: "step-change", Speed: 140 } })
+	testPBs = append(testPBs, PersonalBest{ Date: oldDate, Swing: Swing { Side: "dominant", Colour: "green", Position: "olddate", Speed: 140 } })
 	testSwings = append(testSwings, Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 160 }) // update
 	testSwings = append(testSwings, Swing { Side: "non-dominant", Colour: "blue", Position: "normal", Speed: 125 }) // update
 	testSwings = append(testSwings, Swing { Side: "non-dominant", Colour: "red", Position: "max out", Speed: 128 }) // update
@@ -171,11 +173,11 @@ func TestUpdateMultiplePB(t *testing.T) {
 		t.Error("PBs not set")
 	}
 
-	if(len(testPBs) > 7) {
+	if(len(testPBs) > 8) {
 		t.Error("Too many PBs")
 	}
 
-	if(len(testPBs) < 7) {
+	if(len(testPBs) < 8) {
 		t.Error("Too few PBs")
 	}
 
@@ -240,11 +242,15 @@ func TestUpdateMultiplePB(t *testing.T) {
 		t.Error("Incorrect speed on pb")
 	}
 
-	if(testPBs[5].Swing.Speed != 125) {
+	if(testPBs[6].Swing.Speed != 125) {
 		t.Error("Incorrect speed on pb")
 	}
 
-	if(testPBs[6].Swing.Speed != 156) {
+	if(testPBs[7].Swing.Speed != 156) {
 		t.Error("Incorrect speed on pb")
+	}
+
+	if(testPBs[5].Date != oldDate) {
+		t.Error("Incorrect date on oldDate PB which should not change")
 	}
 }
