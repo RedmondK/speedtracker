@@ -8,4 +8,6 @@ type Session struct {
 	Swings      []Swing   `json:"swings"`
 	TotalSpeed int `json:"totalSpeed"`
 	AverageSpeed int `json:"averageSpeed"`
+	MaximumSpeed int `json:"maximumSpeed"`
+	MinimumSpeed int `json:"minimumSpeed"`
 }

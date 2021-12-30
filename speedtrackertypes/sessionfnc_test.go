@@ -253,4 +253,40 @@ func TestUpdateMultiplePB(t *testing.T) {
 	if(testPBs[5].Date != oldDate) {
 		t.Error("Incorrect date on oldDate PB which should not change")
 	}
+
+	secondTestSwings := []Swing {}
+	secondTestSwings = append(secondTestSwings, Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 180 }) // update
+
+	testPBs = UpdatePersonalBests(testTime, secondTestSwings, testPBs)
+
+	if(len(testPBs) == 0) {
+		t.Error("PBs not set")
+	}
+
+	if(len(testPBs) > 8) {
+		t.Error("Too many PBs")
+	}
+
+	if(len(testPBs) < 8) {
+		t.Error("Too few PBs")
+	}
+
+	if(testPBs[0].Date != testTime) {
+		t.Error("Incorrect date on pb")
+	}
+
+	if(testPBs[0].Swing.Colour != "green") {
+		t.Error("Incorrect colour on pb")
+	}
+
+	if(testPBs[0].Swing.Position != "normal") {
+		t.Error("Incorrect position on pb")
+	}
+
+	if(testPBs[0].Swing.Side != "dominant") {
+		t.Error("Incorrect side on pb")
+	}
+	if(testPBs[0].Swing.Speed != 180) {
+		t.Error("Incorrect speed on pb")
+	}
 }
