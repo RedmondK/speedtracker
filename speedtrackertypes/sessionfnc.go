@@ -23,29 +23,33 @@ func CalculateSessionSpeedStatistics(session *Session) {
 	session.AverageSpeed = session.TotalSpeed / len(session.Swings)
 }
 
-func UpdatePersonalBests(sessionDate time.Time, swings []Swing, personalBests []PersonalBest) (newPBs []PersonalBest) {
+func UpdatePersonalBests(sessionDate time.Time, swings []Swing, existingPersonalBests []PersonalBest) (newPBs []PersonalBest, replacedPBs []PersonalBest) {
+	replacedPBs = []PersonalBest{};
+	
 	for i := 0; i < len(swings); i++ {
 		swing := swings[i];
 		pbFound := false
 		pb := PersonalBest {}
 
-		for j := 0; j < len(personalBests); j++ {
-			pb = personalBests[j];
+		for j := 0; j < len(existingPersonalBests); j++ {
+			pb = existingPersonalBests[j];
 			if(swing.Colour == pb.Swing.Colour && swing.Position == pb.Swing.Position && swing.Side == pb.Swing.Side) {
 				pbFound = true
 
 				if(swing.Speed > pb.Swing.Speed) {
-					personalBests[j].Date = sessionDate
-					personalBests[j].Swing = swing
+					replacedPBs = append(replacedPBs, existingPersonalBests[j])
+
+					existingPersonalBests[j].Date = sessionDate
+					existingPersonalBests[j].Swing = swing
 				}
 			}
 		}
 
 		if(!pbFound) {
 			newPB := PersonalBest { Date: sessionDate, Swing: swing }
-			personalBests = append(personalBests, newPB)
+			existingPersonalBests = append(existingPersonalBests, newPB)
 		}
 	}
 
-	return personalBests
+	return existingPersonalBests, replacedPBs
 }

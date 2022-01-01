@@ -1,6 +1,7 @@
 package speedtrackertypes
 
 import (
+	"log"
 	"testing"
 	"time"
 )
@@ -11,9 +12,10 @@ func TestUpdatePBsFromEmpty(t *testing.T) {
 
 	testTime := time.Now()
 	testPBs := []PersonalBest {}
+	replacedPBs := []PersonalBest {}
 	testSwings = append(testSwings, Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 144 })
 	
-	testPBs = UpdatePersonalBests(testTime, testSwings, testPBs)
+	testPBs, replacedPBs = UpdatePersonalBests(testTime, testSwings, testPBs)
 
 	if(len(testPBs) == 0) {
 		t.Error("PBs not set")
@@ -41,6 +43,8 @@ func TestUpdatePBsFromEmpty(t *testing.T) {
 	if(testPBs[0].Swing.Speed != 144) {
 		t.Error("Incorrect speed on pb")
 	}
+
+	log.Print(replacedPBs)
 }
 
 func TestUpdatePBFromExisting(t *testing.T) {
@@ -49,11 +53,14 @@ func TestUpdatePBFromExisting(t *testing.T) {
 
 	testTime := time.Now()
 	testPBs := []PersonalBest {}
+	replacedPBs := []PersonalBest {}
+
+	timeOfOldPB := time.Now()
 	
-	testPBs = append(testPBs, PersonalBest{ Date: time.Now(), Swing: Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 140 } })
+	testPBs = append(testPBs, PersonalBest{ Date: timeOfOldPB, Swing: Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 140 } })
 	testSwings = append(testSwings, Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 160 })
 
-	UpdatePersonalBests(testTime, testSwings, testPBs)
+	testPBs, replacedPBs = UpdatePersonalBests(testTime, testSwings, testPBs)
 
 	if(len(testPBs) == 0) {
 		t.Error("PBs not set")
@@ -81,6 +88,15 @@ func TestUpdatePBFromExisting(t *testing.T) {
 	if(testPBs[0].Swing.Speed != 160) {
 		t.Error("Incorrect speed on pb")
 	}
+	if(replacedPBs[0].Swing.Speed != 140) {
+		t.Error("Incorrect speed on replaced pb")
+	}
+	if(replacedPBs[0].Date != timeOfOldPB) {
+		t.Error("Incorrect date on replaced pb")
+	}
+
+	log.Print(len(testPBs))
+	log.Print(len(replacedPBs))
 }
 
 func TestUpdateMultiplePBSomeExisting(t *testing.T) {
@@ -89,12 +105,13 @@ func TestUpdateMultiplePBSomeExisting(t *testing.T) {
 
 	testTime := time.Now()
 	testPBs := []PersonalBest {}
+	replacedPBs := []PersonalBest {}
 	
 	testPBs = append(testPBs, PersonalBest{ Date: time.Now(), Swing: Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 140 } })
 	testSwings = append(testSwings, Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 160 })
 	testSwings = append(testSwings, Swing { Side: "non-dominant", Colour: "red", Position: "max out", Speed: 125 })
 
-	testPBs = UpdatePersonalBests(testTime, testSwings, testPBs)
+	testPBs, replacedPBs = UpdatePersonalBests(testTime, testSwings, testPBs)
 
 	if(len(testPBs) == 0) {
 		t.Error("PBs not set")
@@ -145,6 +162,9 @@ func TestUpdateMultiplePBSomeExisting(t *testing.T) {
 	if(testPBs[1].Swing.Speed != 125) {
 		t.Error("Incorrect speed on pb")
 	}
+
+	log.Print(len(testPBs))
+	log.Print(len(replacedPBs))
 }
 
 func TestUpdateMultiplePB(t *testing.T) {
@@ -153,6 +173,8 @@ func TestUpdateMultiplePB(t *testing.T) {
 
 	testTime := time.Now()
 	testPBs := []PersonalBest {}
+	replacedPBs := []PersonalBest {}
+	replacedPBs2 := []PersonalBest {}
 	oldDate, _ := time.Parse(time.RFC3339, "2021-01-01T22:45:02Z")
 	
 	testPBs = append(testPBs, PersonalBest{ Date: time.Now(), Swing: Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 140 } })
@@ -167,7 +189,7 @@ func TestUpdateMultiplePB(t *testing.T) {
 	testSwings = append(testSwings, Swing { Side: "dominant", Colour: "red", Position: "max out", Speed: 125 }) // new
 	testSwings = append(testSwings, Swing { Side: "non-dominant", Colour: "blue", Position: "sprint", Speed: 156 }) //new
 
-	testPBs = UpdatePersonalBests(testTime, testSwings, testPBs)
+	testPBs,replacedPBs = UpdatePersonalBests(testTime, testSwings, testPBs)
 
 	if(len(testPBs) == 0) {
 		t.Error("PBs not set")
@@ -254,10 +276,13 @@ func TestUpdateMultiplePB(t *testing.T) {
 		t.Error("Incorrect date on oldDate PB which should not change")
 	}
 
+	log.Print(len(testPBs))
+	log.Print(len(replacedPBs))
+
 	secondTestSwings := []Swing {}
 	secondTestSwings = append(secondTestSwings, Swing { Side: "dominant", Colour: "green", Position: "normal", Speed: 180 }) // update
 
-	testPBs = UpdatePersonalBests(testTime, secondTestSwings, testPBs)
+	testPBs,replacedPBs2 = UpdatePersonalBests(testTime, secondTestSwings, testPBs)
 
 	if(len(testPBs) == 0) {
 		t.Error("PBs not set")
@@ -289,4 +314,8 @@ func TestUpdateMultiplePB(t *testing.T) {
 	if(testPBs[0].Swing.Speed != 180) {
 		t.Error("Incorrect speed on pb")
 	}
+
+	log.Print(len(testPBs))
+	log.Print(len(replacedPBs))
+	log.Print(len(replacedPBs2))
 }
