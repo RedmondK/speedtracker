@@ -139,3 +139,72 @@ func GetUserCurrentPBs(dbClient *dynamodb.Client, userEmailAddress string) (user
 
 	return retrievedPBs
 }
+
+func GetUserPBHistory(dbClient *dynamodb.Client, userEmailAddress string, colourFilter string, positionFilter string, sideFilter string, limit int32, orderDirection string) (userPBs []PersonalBestHistoryRecord) {
+	sKeyFilterExpression := BuildPBHistorySKFilter(colourFilter, positionFilter, sideFilter)
+
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String("sst-user-data-4aace0e"),
+		KeyConditionExpression: aws.String("#DDB_PK = :pkey and begins_with(#DDB_SK,:skey)"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pkey": &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", userEmailAddress)},
+			":skey": &types.AttributeValueMemberS{Value: sKeyFilterExpression},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#DDB_PK": "PK",
+			"#DDB_SK": "SK",
+		},
+	}
+
+	if limit > 0 {
+		queryInput.Limit = &limit
+	}
+
+	if orderDirection != "" {
+		queryInput.ScanIndexForward = aws.Bool(strings.ToLower(orderDirection) == "asc")
+	}
+
+	out, err := dbClient.Query(context.TODO(), queryInput)
+
+	if err != nil {
+		log.Fatalf("User current pbs database query error: %s", err.Error())
+		panic(err)
+	}
+
+	if out.Count == 0 {
+		return nil
+	}
+
+	queryResult := out.Items
+	retrievedPBs := []PersonalBestHistoryRecord{}
+	unmarshalError := attributevalue.UnmarshalListOfMaps(queryResult, &retrievedPBs)
+
+	log.Print(retrievedPBs)
+
+	if unmarshalError != nil {
+		log.Fatalf("User current pbs unmarshalling error: %s", unmarshalError.Error())
+	}
+
+	return retrievedPBs
+}
+
+func BuildPBHistorySKFilter(colourFilter string, positionFilter string, sideFilter string) (filterExpression string) {
+	filterString := "PB#"
+
+	if colourFilter != "" {
+		filterString += strings.ToUpper(colourFilter)
+		filterString += "#"
+	}
+
+	if positionFilter != "" {
+		filterString += strings.ToUpper(positionFilter)
+		filterString += "#"
+	}
+
+	if sideFilter != "" {
+		filterString += strings.ToUpper(sideFilter)
+		filterString += "#"
+	}
+
+	return filterString
+}
