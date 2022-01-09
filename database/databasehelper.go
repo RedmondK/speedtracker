@@ -28,7 +28,7 @@ func GetDatabaseClient() (dbClient *dynamodb.Client) {
 	return dynamodb.NewFromConfig(cfg)
 }
 
-func RecordPBsInHistory(dbClient *dynamodb.Client, userEmailAddress string, pb speedtrackertypes.PersonalBest) {
+func RecordPBInHistory(dbClient *dynamodb.Client, userEmailAddress string, pb speedtrackertypes.PersonalBest) {
 	pbAttributeValue, marshallingErr := attributevalue.MarshalMap(pb)
 
 	if marshallingErr != nil {
