@@ -208,3 +208,26 @@ func BuildPBHistorySKFilter(colourFilter string, positionFilter string, sideFilt
 
 	return filterString
 }
+
+func RemovePBFromHistory(dbClient *dynamodb.Client, userEmailAddress string, pbHistoryRecordToDelete PersonalBestHistoryRecord) {
+	pb := pbHistoryRecordToDelete.PersonalBest
+	sKeyFilterExpression := BuildPBHistorySKFilter(pb.Swing.Colour, pb.Swing.Position, pb.Swing.Side)
+	sKeyFilterExpression += pb.Date.Format(time.RFC3339Nano)
+
+	deleteInput := &dynamodb.DeleteItemInput{
+		TableName: aws.String("sst-user-data-4aace0e"),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", userEmailAddress)},
+			"SK": &types.AttributeValueMemberS{Value: sKeyFilterExpression},
+		},
+	}
+
+	_, err := dbClient.DeleteItem(context.TODO(), deleteInput)
+
+	if err != nil {
+		log.Printf("PKey: %s", fmt.Sprintf("USER#%s", userEmailAddress))
+		log.Printf("SKey: %s", sKeyFilterExpression)
+		log.Fatalf("Error deleting pb history item: %s", err.Error())
+		panic(err)
+	}
+}
