@@ -17,8 +17,7 @@ func TestUpdatePBsFromEmpty(t *testing.T) {
 	testSwings = append(testSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 144})
 	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
 
-	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetUpdatedPersonalBestsUsingNewSwings(testTime, testPBs, testSwings)
-	obsoletePBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[0], testPersonalBestHistory)
+	newCurrentPBs, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testTime, testPBs, testSwings, testPersonalBestHistory)
 
 	if len(newCurrentPBs) == 0 {
 		t.Error("PBs not set")
@@ -72,8 +71,7 @@ func TestUpdatePBFromExisting(t *testing.T) {
 	testSwings = append(testSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 160})
 	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
 
-	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetUpdatedPersonalBestsUsingNewSwings(testTime, testPBs, testSwings)
-	obsoletePBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[0], testPersonalBestHistory)
+	newCurrentPBs, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testTime, testPBs, testSwings, testPersonalBestHistory)
 
 	if len(newCurrentPBs) == 0 {
 		t.Error("New Current PBs not set")
@@ -137,9 +135,7 @@ func TestUpdateMultiplePBSomeExisting(t *testing.T) {
 	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
 	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: oldPB.Swing.Speed, PersonalBest: oldPB})
 
-	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetUpdatedPersonalBestsUsingNewSwings(testSessionTime, currentPBs, newSwings)
-	obsoleteGreenPBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[0], testPersonalBestHistory)
-	obsoleteRedPBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[1], testPersonalBestHistory)
+	newCurrentPBs, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
 
 	if len(newCurrentPBs) == 0 {
 		t.Error("PBs not set")
@@ -199,11 +195,7 @@ func TestUpdateMultiplePBSomeExisting(t *testing.T) {
 		t.Error("Incorrect speed on pb")
 	}
 
-	if len(obsoleteGreenPBs) > 0 {
-		t.Error("Obsolete PBs should not be set")
-	}
-
-	if len(obsoleteRedPBs) > 0 {
+	if len(obsoletePBs) > 0 {
 		t.Error("Obsolete PBs should not be set")
 	}
 }
@@ -234,8 +226,7 @@ func TestUpdateMultiplePB(t *testing.T) {
 	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
 	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: oldPB.Swing.Speed, PersonalBest: oldPB})
 
-	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetUpdatedPersonalBestsUsingNewSwings(testSessionTime, currentPBs, newSwings)
-	obsoletePBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[0], testPersonalBestHistory)
+	newCurrentPBs, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
 
 	if len(newPBsForHistory) == 0 {
 		t.Error("history records not set")
@@ -368,8 +359,7 @@ func TestUpdateWithSessionInThePast(t *testing.T) {
 	//now the user submits a swing that is newer than two existing PBs, therefore goes into the middle of the history, but also means those shouldn't be PBs since it's swing
 	//is faster than them
 	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 160}) // update
-	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetUpdatedPersonalBestsUsingNewSwings(testSessionTime, currentPBs, newSwings)
-	obsoletePBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[0], testPersonalBestHistory)
+	newCurrentPBs, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
 
 	//only one swing type involved, so new current pbs should contain one pb
 	if len(newCurrentPBs) > 1 {
@@ -436,8 +426,7 @@ func TestUpdateWithSessionInThePastEnsuringOtherSwingTypeHistoriesAreNotAffected
 	//now the user submits a swing that is older than two existing PBs, therefore goes into the middle of the history, but also means those shouldn't be PBs since it's swing
 	//is faster than them. other swing colours should not be affected
 	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 160}) // update
-	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetUpdatedPersonalBestsUsingNewSwings(testSessionTime, currentPBs, newSwings)
-	obsoletePBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[0], testPersonalBestHistory)
+	newCurrentPBs, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
 
 	//only one swing type involved, so new current pbs should contain one pb
 	if len(newCurrentPBs) > 1 {
@@ -521,10 +510,7 @@ func TestLargeDataSetWithMultipleTypesFromThreeSessions(t *testing.T) {
 
 	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "non-dominant", Colour: "red", Position: "step-change", Speed: 76})
 	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 134})
-	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetUpdatedPersonalBestsUsingNewSwings(testSessionTime, currentPBs, newSwings)
-
-	obsoletePBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[8], testPersonalBestHistory)
-	obsoletePBs2 := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[2], testPersonalBestHistory)
+	newCurrentPBs, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
 
 	//only one swing type involved, so new current pbs should contain one pb
 	if len(newCurrentPBs) != 9 {
@@ -533,15 +519,10 @@ func TestLargeDataSetWithMultipleTypesFromThreeSessions(t *testing.T) {
 
 	if len(newPBsForHistory) != 2 {
 		t.Errorf("Too many new pbs %s", strconv.Itoa(len(newPBsForHistory)))
-		log.Print(newPBsForHistory)
 	}
 
-	if len(obsoletePBs) != 2 {
-		t.Errorf("Should have two obsolete PBs, found: %s", strconv.Itoa(len(obsoletePBs)))
-	}
-
-	if len(obsoletePBs2) != 1 {
-		t.Errorf("Should have one obsolete PBs, found: %s", strconv.Itoa(len(obsoletePBs2)))
+	if len(obsoletePBs) != 3 {
+		t.Errorf("Should have three obsolete PBs, found: %s", strconv.Itoa(len(obsoletePBs)))
 	}
 
 	if obsoletePBs[0].PersonalBest.Date != session2PB3.Date {
@@ -550,10 +531,6 @@ func TestLargeDataSetWithMultipleTypesFromThreeSessions(t *testing.T) {
 
 	if obsoletePBs[1].PersonalBest.Date != session3PB2.Date {
 		t.Error("Incorrect second obsolete pb")
-	}
-
-	if obsoletePBs2[0].PersonalBest.Date != session3PB1.Date {
-		t.Error("Incorrect first obsolete pb")
 	}
 }
 
@@ -580,10 +557,43 @@ func TestCreationOfAHistoricalPBWhichIsNotANewCurrentPB(t *testing.T) {
 	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb3.Swing.Speed, PersonalBest: pb3})
 
 	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 112})
-	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetUpdatedPersonalBestsUsingNewSwings(testSessionTime, currentPBs, newSwings)
-	obsoletePBs := speedtrackertypes.GetObsoletePBHistoryWithNewPBs(newCurrentPBs[0], testPersonalBestHistory)
+	_, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
 
-	log.Print(newCurrentPBs)
+	if len(newPBsForHistory) != 1 {
+		t.Errorf("Incorrect new pbs, expect 1, got %s", strconv.Itoa(len(newPBsForHistory)))
+		log.Print(newPBsForHistory)
+	}
+
+	if len(obsoletePBs) != 1 {
+		t.Errorf("Too few obsolete pbs, expect 1, got %s", strconv.Itoa(len(obsoletePBs)))
+		log.Print(obsoletePBs)
+	}
+}
+
+func TestCreationOfAHistoricalPBWhichIsNotANewCurrentPBForMultipleObsoletes(t *testing.T) {
+	newSwings := []speedtrackertypes.Swing{}
+	testSessionTime, _ := time.Parse(time.RFC3339, "2022-01-08T22:31:02Z")
+
+	existingDate1, _ := time.Parse(time.RFC3339, "2022-01-08T22:30:02Z")
+	existingDate2, _ := time.Parse(time.RFC3339, "2022-01-08T22:35:02Z")
+	existingDate3, _ := time.Parse(time.RFC3339, "2022-01-11T12:00:02Z")
+
+	pb1 := speedtrackertypes.PersonalBest{Date: existingDate1, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 108}}
+	pb2 := speedtrackertypes.PersonalBest{Date: existingDate2, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 110}}
+	pb3 := speedtrackertypes.PersonalBest{Date: existingDate3, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 223}}
+
+	currentPBs := []speedtrackertypes.PersonalBest{}
+
+	//setup current PBs based on above
+	currentPBs = append(currentPBs, pb3)
+
+	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb1.Swing.Speed, PersonalBest: pb1})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb2.Swing.Speed, PersonalBest: pb2})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb3.Swing.Speed, PersonalBest: pb3})
+
+	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 224})
+	_, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
 
 	if len(newPBsForHistory) != 1 {
 		t.Errorf("Incorrect new pbs, expect 1, got %s", strconv.Itoa(len(newPBsForHistory)))
