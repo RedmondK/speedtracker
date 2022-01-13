@@ -641,3 +641,39 @@ func TestForEqualSpeedsCreatingObsolete(t *testing.T) {
 		log.Print(obsoletePBs)
 	}
 }
+
+func TestÈditingCurrentPB(t *testing.T) {
+	newSwings := []speedtrackertypes.Swing{}
+	testSessionTime, _ := time.Parse(time.RFC3339, "2022-01-08T22:31:00Z")
+
+	existingDate1, _ := time.Parse(time.RFC3339, "2022-01-08T22:30:02Z")
+	existingDate2, _ := time.Parse(time.RFC3339, "2022-01-08T22:35:02Z")
+	existingDate3, _ := time.Parse(time.RFC3339, "2022-01-11T12:00:02Z")
+
+	pb1 := speedtrackertypes.PersonalBest{Date: existingDate1, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 108}}
+	pb2 := speedtrackertypes.PersonalBest{Date: existingDate2, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 110}}
+	pb3 := speedtrackertypes.PersonalBest{Date: existingDate3, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 223}}
+
+	currentPBs := []speedtrackertypes.PersonalBest{}
+
+	//setup current PBs based on above
+	currentPBs = append(currentPBs, pb3)
+
+	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb1.Swing.Speed, PersonalBest: pb1})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb2.Swing.Speed, PersonalBest: pb2})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb3.Swing.Speed, PersonalBest: pb3})
+
+	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 223})
+	_, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
+
+	if len(newPBsForHistory) != 1 {
+		t.Errorf("Incorrect new pbs, expect 1, got %s", strconv.Itoa(len(newPBsForHistory)))
+		log.Print(newPBsForHistory)
+	}
+
+	if len(obsoletePBs) != 2 {
+		t.Errorf("Incorrect obsolete pbs, expect 2, got %s", strconv.Itoa(len(obsoletePBs)))
+		log.Print(obsoletePBs)
+	}
+}
