@@ -642,9 +642,9 @@ func TestForEqualSpeedsCreatingObsolete(t *testing.T) {
 	}
 }
 
-func TestÈditingCurrentPB(t *testing.T) {
+func TestÈditingCurrentPBSpeedUpdate(t *testing.T) {
 	newSwings := []speedtrackertypes.Swing{}
-	testSessionTime, _ := time.Parse(time.RFC3339, "2022-01-08T22:31:00Z")
+	testSessionTime, _ := time.Parse(time.RFC3339, "2022-01-11T12:00:02Z")
 
 	existingDate1, _ := time.Parse(time.RFC3339, "2022-01-08T22:30:02Z")
 	existingDate2, _ := time.Parse(time.RFC3339, "2022-01-08T22:35:02Z")
@@ -664,7 +664,7 @@ func TestÈditingCurrentPB(t *testing.T) {
 	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb2.Swing.Speed, PersonalBest: pb2})
 	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb3.Swing.Speed, PersonalBest: pb3})
 
-	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 223})
+	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 224})
 	_, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
 
 	if len(newPBsForHistory) != 1 {
@@ -672,8 +672,8 @@ func TestÈditingCurrentPB(t *testing.T) {
 		log.Print(newPBsForHistory)
 	}
 
-	if len(obsoletePBs) != 2 {
-		t.Errorf("Incorrect obsolete pbs, expect 2, got %s", strconv.Itoa(len(obsoletePBs)))
+	if len(obsoletePBs) != 0 {
+		t.Errorf("Incorrect obsolete pbs, expect 0, got %s", strconv.Itoa(len(obsoletePBs)))
 		log.Print(obsoletePBs)
 	}
 }

@@ -39,13 +39,17 @@ func GetUpdatedPersonalBestData(sessionDate time.Time, personalBests []PersonalB
 					continue
 				}
 
-				if existingPBHistory[i].PersonalBest.Swing.Speed <= swing.Speed && existingPBHistory[i].PersonalBest.Swing.Colour == swing.Colour && existingPBHistory[i].PersonalBest.Swing.Position == swing.Position && existingPBHistory[i].PersonalBest.Swing.Side == swing.Side { //this swing is slower than this new swing and is invalid in the PB History
+				var existingPBSwing = existingPBHistory[i].PersonalBest.Swing
+				if existingPBSwing.Speed <= swing.Speed && existingPBSwing.Colour == swing.Colour && existingPBSwing.Position == swing.Position && existingPBSwing.Side == swing.Side { //this swing is slower than this new swing and is invalid in the PB History
 					if !pbCreated { //check to avoid creating duplicate pbs for this swing when it supercedes multiple history items
 						newPB := PersonalBest{Date: sessionDate, Swing: swing}
 						createdPBs = append(createdPBs, newPB) //this PB has been created now but will not become part of the user personal bests
 						pbCreated = true
 					}
-					obsoleteHistoryRecords = append(obsoleteHistoryRecords, existingPBHistory[i]) //mark the obsolete pb history for deletion
+
+					if !existingPBHistory[i].PersonalBest.Date.Equal(sessionDate) {
+						obsoleteHistoryRecords = append(obsoleteHistoryRecords, existingPBHistory[i]) //mark the obsolete pb history for deletion
+					}
 				}
 			}
 		} else { // this PB has updated a PB and may have caused obsolete PB records which need to be marked obsolete
@@ -54,11 +58,11 @@ func GetUpdatedPersonalBestData(sessionDate time.Time, personalBests []PersonalB
 					continue
 				}
 
-				if existingPBHistory[i].PersonalBest.Swing.Speed <= swing.Speed && existingPBHistory[i].PersonalBest.Swing.Colour == swing.Colour && existingPBHistory[i].PersonalBest.Swing.Position == swing.Position && existingPBHistory[i].PersonalBest.Swing.Side == swing.Side { //this swing is slower than this new swing and is invalid in the PB History
-					obsoleteHistoryRecords = append(obsoleteHistoryRecords, existingPBHistory[i]) //mark the obsolete pb history for deletion
-
-					//suspect need to check here if the pb being marked obsolete in the history has the same date as one just created, in which case it would
-					//cause deletion of the newly created pb history since dynamodb will run an update based on SK, matching both
+				var existingPBSwing = existingPBHistory[i].PersonalBest.Swing
+				if existingPBSwing.Speed <= swing.Speed && existingPBSwing.Colour == swing.Colour && existingPBSwing.Position == swing.Position && existingPBSwing.Side == swing.Side { //this swing is slower than this new swing and is invalid in the PB History
+					if !existingPBHistory[i].PersonalBest.Date.Equal(sessionDate) {
+						obsoleteHistoryRecords = append(obsoleteHistoryRecords, existingPBHistory[i]) //mark the obsolete pb history for deletion
+					}
 				}
 			}
 		}
