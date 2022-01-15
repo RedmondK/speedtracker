@@ -15,7 +15,7 @@ func GetUpdatedPersonalBestData(sessionDate time.Time, personalBests []PersonalB
 			if swing.Colour == pb.Swing.Colour && swing.Position == pb.Swing.Position && swing.Side == pb.Swing.Side {
 				pbFound = true
 
-				if swing.Speed > pb.Swing.Speed {
+				if swing.Speed > pb.Swing.Speed || sessionDate.Equal(pb.Date) {
 					personalBests[j].Date = sessionDate
 					personalBests[j].Swing = swing
 
