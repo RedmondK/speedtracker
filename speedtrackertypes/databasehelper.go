@@ -272,3 +272,22 @@ func RemovePBFromHistory(dbClient *dynamodb.Client, userEmailAddress string, pbH
 		panic(err)
 	}
 }
+
+func RemoveUserCurrentPBs(dbClient *dynamodb.Client, userEmailAddress string) {
+	deleteInput := &dynamodb.DeleteItemInput{
+		TableName: aws.String("sst-user-data-4aace0e"),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", userEmailAddress)},
+			"SK": &types.AttributeValueMemberS{Value: "CURRENTPBS"},
+		},
+	}
+
+	_, err := dbClient.DeleteItem(context.TODO(), deleteInput)
+
+	if err != nil {
+		log.Printf("PKey: %s", fmt.Sprintf("USER#%s", userEmailAddress))
+		log.Printf("SKey: %s", "CURRENTPBS")
+		log.Fatalf("Error deleting pb history item: %s", err.Error())
+		panic(err)
+	}
+}
