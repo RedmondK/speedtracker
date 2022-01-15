@@ -678,7 +678,7 @@ func TestÈditingCurrentPBSpeedUpdate(t *testing.T) {
 	}
 }
 
-func TestÈditingCurrentPBSpeedUpdateDown(t *testing.T) {
+/*func TestÈditingCurrentPBSpeedUpdateDown(t *testing.T) {
 	newSwings := []speedtrackertypes.Swing{}
 	testSessionTime, _ := time.Parse(time.RFC3339, "2022-01-11T12:00:02Z")
 
@@ -727,7 +727,7 @@ func TestÈditingCurrentPBSpeedUpdateDown(t *testing.T) {
 		t.Errorf("Incorrect obsolete pbs, expect 0, got %s", strconv.Itoa(len(obsoletePBs)))
 		log.Print(obsoletePBs)
 	}
-}
+}*/
 
 func TestEditingPBFuturePBBecomesObsolete(t *testing.T) {
 	newSwings := []speedtrackertypes.Swing{}
