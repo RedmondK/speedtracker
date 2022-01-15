@@ -62,6 +62,12 @@ func CreateAttributeValueSliceFromPersonalBestSlice(inputMap []PersonalBest) (at
 	return returnVal
 }
 
+func UpdateUserPBHistory(dbClient *dynamodb.Client, userEmailAddress string, pbHistory []PersonalBestHistoryRecord) {
+	for _, pbHistoryRecord := range pbHistory {
+		RecordPBInHistory(dbClient, userEmailAddress, pbHistoryRecord.PersonalBest)
+	}
+}
+
 func RecordPBInHistory(dbClient *dynamodb.Client, userEmailAddress string, pb PersonalBest) {
 	pbAttributeValue, marshallingErr := attributevalue.MarshalMap(pb)
 

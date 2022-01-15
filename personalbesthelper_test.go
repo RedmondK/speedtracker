@@ -808,3 +808,36 @@ func TestEditingNonCurrentPBBecomingAPB(t *testing.T) {
 		log.Print(obsoletePBs)
 	}
 }
+
+func TestIdentifyObsoleteRecords(t *testing.T) {
+	existingDate1, _ := time.Parse(time.RFC3339, "2022-01-12T22:30:02Z")
+	existingPB1 := speedtrackertypes.PersonalBest{Date: existingDate1, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 331}}
+	existingDate2, _ := time.Parse(time.RFC3339, "2022-01-14T22:30:02Z")
+	existingPB2 := speedtrackertypes.PersonalBest{Date: existingDate2, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 350}}
+
+	existing := []speedtrackertypes.PersonalBestHistoryRecord{
+		{
+			Speed:        331,
+			PersonalBest: existingPB1,
+		},
+		{
+			Speed:        350,
+			PersonalBest: existingPB2,
+		},
+	}
+
+	newDate1, _ := time.Parse(time.RFC3339, "2022-01-14T22:30:02Z")
+	newPB1 := speedtrackertypes.PersonalBest{Date: newDate1, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 375}}
+
+	new := []speedtrackertypes.PersonalBestHistoryRecord{{
+		Speed:        375,
+		PersonalBest: newPB1,
+	}}
+
+	obsolete := speedtrackertypes.IdentifyObsoletePBHistoryRecords(existing, new)
+
+	if len(obsolete) != 1 {
+		t.Errorf("Incorrect obsolete pbs, expect 1, got %s", strconv.Itoa(len(obsolete)))
+		log.Print(obsolete)
+	}
+}

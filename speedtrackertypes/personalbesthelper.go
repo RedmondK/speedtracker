@@ -155,3 +155,33 @@ func HistoryRecordExists(historyRecord PersonalBestHistoryRecord, currentHistory
 
 	return false
 }
+
+func IdentifyObsoletePBHistoryRecords(previousHistory []PersonalBestHistoryRecord, newHistory []PersonalBestHistoryRecord) (obsoleteRecords []PersonalBestHistoryRecord) {
+	sort.Slice(previousHistory, func(i, j int) bool {
+		return previousHistory[i].PersonalBest.Date.Before(previousHistory[j].PersonalBest.Date)
+	})
+
+	sort.Slice(newHistory, func(i, j int) bool {
+		return newHistory[i].PersonalBest.Date.Before(newHistory[j].PersonalBest.Date)
+	})
+
+	foundInNewHistory := false
+
+	for _, previousRecord := range previousHistory {
+		for _, newRecord := range newHistory {
+			if newRecord.PersonalBest.Date.After(previousRecord.PersonalBest.Date) {
+				break
+			}
+
+			if newRecord.PersonalBest.Date.Equal(previousRecord.PersonalBest.Date) {
+				foundInNewHistory = true
+			}
+		}
+
+		if !foundInNewHistory {
+			obsoleteRecords = append(obsoleteRecords, previousRecord)
+		}
+	}
+
+	return obsoleteRecords
+}
