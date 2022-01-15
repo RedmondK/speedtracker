@@ -677,3 +677,139 @@ func TestÈditingCurrentPBSpeedUpdate(t *testing.T) {
 		log.Print(obsoletePBs)
 	}
 }
+
+func TestEditingPBFuturePBBecomesObsolete(t *testing.T) {
+	newSwings := []speedtrackertypes.Swing{}
+
+	testSessionTime, _ := time.Parse(time.RFC3339, "2022-01-21T12:00:01Z")
+	existingDate1, _ := time.Parse(time.RFC3339, "2022-01-08T22:30:02Z")
+	existingDate3, _ := time.Parse(time.RFC3339, "2022-01-13T12:00:02Z")
+	existingDate4, _ := time.Parse(time.RFC3339, "2022-01-21T12:00:02Z")
+
+	pb1 := speedtrackertypes.PersonalBest{Date: existingDate1, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 225}}
+	pb2 := speedtrackertypes.PersonalBest{Date: existingDate3, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 245}}
+	pb3 := speedtrackertypes.PersonalBest{Date: testSessionTime, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 300}}
+	pb4 := speedtrackertypes.PersonalBest{Date: existingDate4, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 308}}
+
+	currentPBs := []speedtrackertypes.PersonalBest{}
+
+	//setup current PBs based on above
+	currentPBs = append(currentPBs, pb3)
+
+	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb1.Swing.Speed, PersonalBest: pb1})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb2.Swing.Speed, PersonalBest: pb2})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb3.Swing.Speed, PersonalBest: pb3})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb4.Swing.Speed, PersonalBest: pb4})
+
+	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 309})
+
+	_, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
+
+	if len(newPBsForHistory) != 1 {
+		t.Errorf("Incorrect new pbs, expect 1, got %s", strconv.Itoa(len(newPBsForHistory)))
+		log.Print(newPBsForHistory)
+	}
+
+	if len(obsoletePBs) != 1 {
+		t.Errorf("Incorrect obsolete pbs, expect 1, got %s", strconv.Itoa(len(obsoletePBs)))
+		log.Print(obsoletePBs)
+	}
+
+	if !obsoletePBs[0].PersonalBest.Date.Equal(existingDate4) {
+		t.Errorf("Incorrect obsolete pb based on date test")
+		log.Print(obsoletePBs)
+	}
+}
+
+func TestEditingNonCurrentPBBecomingAPB(t *testing.T) {
+	newSwings := []speedtrackertypes.Swing{}
+
+	testSessionTime, _ := time.Parse(time.RFC3339, "2022-01-21T22:40:12Z")
+	existingDate1, _ := time.Parse(time.RFC3339, "2022-01-12T22:30:02Z")
+
+	pb1 := speedtrackertypes.PersonalBest{Date: existingDate1, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 331}}
+
+	currentPBs := []speedtrackertypes.PersonalBest{}
+
+	//setup current PBs based on above
+	currentPBs = append(currentPBs, pb1)
+
+	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb1.Swing.Speed, PersonalBest: pb1})
+
+	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 335})
+
+	newPBs, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
+
+	if !newPBs[0].Date.Equal(testSessionTime) {
+		t.Errorf("Incorrect pb")
+		log.Print(newPBs)
+	}
+
+	if len(newPBsForHistory) != 1 {
+		t.Errorf("Incorrect new pbs, expect 1, got %s", strconv.Itoa(len(newPBsForHistory)))
+		log.Print(newPBsForHistory)
+	}
+
+	if len(obsoletePBs) != 0 {
+		t.Errorf("Incorrect obsolete pbs, expect 0, got %s", strconv.Itoa(len(obsoletePBs)))
+		log.Print(obsoletePBs)
+	}
+}
+
+func TestEditingPBFutureSwingBecomingPBAsAResult(t *testing.T) {
+	newSwings := []speedtrackertypes.Swing{}
+	testSessionTime, _ := time.Parse(time.RFC3339, "2022-01-11T12:00:02Z")
+
+	existingDate1, _ := time.Parse(time.RFC3339, "2022-01-08T22:30:02Z")
+	existingDate3, _ := time.Parse(time.RFC3339, "2022-01-13T12:00:02Z")
+	existingDate4, _ := time.Parse(time.RFC3339, "2022-01-14T12:00:02Z")
+
+	pb1 := speedtrackertypes.PersonalBest{Date: existingDate1, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 225}}
+	pb2 := speedtrackertypes.PersonalBest{Date: testSessionTime, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 245}}
+	pb3 := speedtrackertypes.PersonalBest{Date: existingDate3, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 300}}
+	pb4 := speedtrackertypes.PersonalBest{Date: existingDate4, Swing: speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 325}}
+
+	currentPBs := []speedtrackertypes.PersonalBest{}
+
+	//setup current PBs based on above
+	currentPBs = append(currentPBs, pb3)
+
+	testPersonalBestHistory := []speedtrackertypes.PersonalBestHistoryRecord{}
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb1.Swing.Speed, PersonalBest: pb1})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb2.Swing.Speed, PersonalBest: pb2})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb3.Swing.Speed, PersonalBest: pb3})
+	testPersonalBestHistory = append(testPersonalBestHistory, speedtrackertypes.PersonalBestHistoryRecord{Speed: pb4.Swing.Speed, PersonalBest: pb4})
+
+	newSwings = append(newSwings, speedtrackertypes.Swing{Side: "dominant", Colour: "green", Position: "normal", Speed: 224})
+
+	_, newPBsForHistory, obsoletePBs := speedtrackertypes.GetUpdatedPersonalBestData(testSessionTime, currentPBs, newSwings, testPersonalBestHistory)
+
+	var isEditOfNonCurrentPB = testSessionTime.Equal(pb2.Date)
+
+	if !isEditOfNonCurrentPB {
+		t.Errorf("Should be an edit of a non current PB")
+	}
+
+	if len(newPBsForHistory) != 1 {
+		t.Errorf("Incorrect new pbs, expect 1, got %s", strconv.Itoa(len(newPBsForHistory)))
+		log.Print(newPBsForHistory)
+	}
+
+	if len(obsoletePBs) != 1 {
+		t.Errorf("Incorrect obsolete pbs, expect 1, got %s", strconv.Itoa(len(obsoletePBs)))
+		log.Print(obsoletePBs)
+	}
+
+	if !obsoletePBs[0].PersonalBest.Date.Equal(testSessionTime) {
+		t.Errorf("Incorrect obsolete pb based on date test")
+		log.Print(obsoletePBs)
+	}
+
+	existingDate2, _ := time.Parse(time.RFC3339, "2022-01-12T22:35:02Z")
+	if !newPBsForHistory[0].Date.Equal(existingDate2) {
+		t.Errorf("Incorrect obsolete pb based on date test")
+		log.Print(obsoletePBs)
+	}
+}

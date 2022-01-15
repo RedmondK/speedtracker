@@ -103,6 +103,47 @@ func UpdateUserCurrentPBs(dbClient *dynamodb.Client, userEmailAddress string, pb
 	}
 }
 
+func GetUserSessions(dbClient *dynamodb.Client, userEmailAddress string, limit int32, orderDirection string) (userSessions []Session) {
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String("sst-user-data-4aace0e"),
+		KeyConditionExpression: aws.String("#DDB_PK = :pkey and begins_with(#DDB_SK,:skey)"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pkey": &types.AttributeValueMemberS{Value: fmt.Sprintf("USER#%s", userEmailAddress)},
+			":skey": &types.AttributeValueMemberS{Value: "SESSION#"},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#DDB_PK": "PK",
+			"#DDB_SK": "SK",
+		},
+		ScanIndexForward: aws.Bool(false),
+	}
+
+	if limit > 0 {
+		queryInput.Limit = &limit
+	}
+
+	if orderDirection != "" {
+		queryInput.ScanIndexForward = aws.Bool(strings.ToLower(orderDirection) == "asc")
+	}
+
+	out, err := dbClient.Query(context.TODO(), queryInput)
+
+	if err != nil {
+		log.Fatalf("User profile database query error: %s", err.Error())
+		panic(err)
+	}
+
+	queryResult := out.Items
+	retrievedSessions := []Session{}
+	unmarshalError := attributevalue.UnmarshalListOfMaps(queryResult, &retrievedSessions)
+
+	if unmarshalError != nil {
+		log.Fatalf("User profile unmarshalling error: %s", unmarshalError.Error())
+	}
+
+	return retrievedSessions
+}
+
 func GetUserCurrentPBs(dbClient *dynamodb.Client, userEmailAddress string) (userSessions []PersonalBest) {
 	out, err := dbClient.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String("sst-user-data-4aace0e"),

@@ -52,13 +52,14 @@ func GetUpdatedPersonalBestData(sessionDate time.Time, personalBests []PersonalB
 					}
 				}
 			}
-		} else { // this PB has updated a PB and may have caused obsolete PB records which need to be marked obsolete
+		} else { // this PB has updated a PB and may have caused obsolete PB records which need to be marked obsolete or may have caused future swings to become PBs
 			for i := 0; i < len(existingPBHistory); i++ {
 				if existingPBHistory[i].PersonalBest.Date.Before(sessionDate) { //this swing cannot supercede a PB in the past
 					continue
 				}
 
 				var existingPBSwing = existingPBHistory[i].PersonalBest.Swing
+
 				if existingPBSwing.Speed <= swing.Speed && existingPBSwing.Colour == swing.Colour && existingPBSwing.Position == swing.Position && existingPBSwing.Side == swing.Side { //this swing is slower than this new swing and is invalid in the PB History
 					if !existingPBHistory[i].PersonalBest.Date.Equal(sessionDate) {
 						obsoleteHistoryRecords = append(obsoleteHistoryRecords, existingPBHistory[i]) //mark the obsolete pb history for deletion
