@@ -165,16 +165,13 @@ func IdentifyObsoletePBHistoryRecords(previousHistory []PersonalBestHistoryRecor
 		return newHistory[i].PersonalBest.Date.Before(newHistory[j].PersonalBest.Date)
 	})
 
-	foundInNewHistory := false
-
 	for _, previousRecord := range previousHistory {
-		for _, newRecord := range newHistory {
-			if newRecord.PersonalBest.Date.After(previousRecord.PersonalBest.Date) {
-				break
-			}
+		foundInNewHistory := false
 
+		for _, newRecord := range newHistory {
 			if newRecord.PersonalBest.Date.Equal(previousRecord.PersonalBest.Date) {
 				foundInNewHistory = true
+				break
 			}
 		}
 

@@ -226,8 +226,6 @@ func GetUserPBHistory(dbClient *dynamodb.Client, userEmailAddress string, colour
 	retrievedPBs := []PersonalBestHistoryRecord{}
 	unmarshalError := attributevalue.UnmarshalListOfMaps(queryResult, &retrievedPBs)
 
-	log.Print(retrievedPBs)
-
 	if unmarshalError != nil {
 		log.Fatalf("User current pbs unmarshalling error: %s", unmarshalError.Error())
 	}
