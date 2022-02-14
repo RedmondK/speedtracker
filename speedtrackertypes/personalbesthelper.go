@@ -48,6 +48,7 @@ func UpdatePersonalBestsWithNewPB(newPersonalBest PersonalBest, personalBests []
 	for index, pb := range personalBests {
 		if SwingsHaveSameCharacteristics(pb.Swing, newPersonalBest.Swing) {
 			personalBests[index] = newPersonalBest
+			return
 		}
 	}
 }
@@ -77,7 +78,7 @@ func UpdatePersonalBestHistoryWithNewPB(newPersonalBest PersonalBest, personalBe
 
 func HistoryRecordExists(historyRecord PersonalBestHistoryRecord, currentHistory []PersonalBestHistoryRecord) (exists bool) {
 	for _, currentRecord := range currentHistory {
-		if historyRecord.PersonalBest.Date.Equal(currentRecord.PersonalBest.Date) {
+		if historyRecord.PersonalBest.Date.Equal(currentRecord.PersonalBest.Date) && SwingsHaveSameCharacteristics(historyRecord.PersonalBest.Swing, currentRecord.PersonalBest.Swing) {
 			return true
 		}
 	}

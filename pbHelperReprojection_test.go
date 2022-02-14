@@ -427,3 +427,49 @@ func TestFromEmptyMultiSessionMultiTypeNonSequential(t *testing.T) {
 		log.Print(newPBsForHistory)
 	}
 }
+
+func TestErrorCaseOccuringInRedSwings(t *testing.T) {
+	testTime, _ := time.Parse(time.RFC3339, "2021-12-08T17:59:43Z")
+	testTime2, _ := time.Parse(time.RFC3339, "2021-12-14T18:00:08Z")
+
+	testSessions := []speedtrackertypes.Session{
+		{
+			Date: testTime,
+			Swings: []speedtrackertypes.Swing{
+				{Side: "dominant", Colour: "green", Position: "normal", Speed: 98},
+				{Side: "dominant", Colour: "green", Position: "normal", Speed: 106},
+				{Side: "dominant", Colour: "green", Position: "normal", Speed: 108},
+				{Side: "dominant", Colour: "blue", Position: "normal", Speed: 103},
+				{Side: "dominant", Colour: "blue", Position: "normal", Speed: 105},
+				{Side: "dominant", Colour: "blue", Position: "normal", Speed: 108},
+				{Side: "dominant", Colour: "red", Position: "normal", Speed: 94},
+				{Side: "dominant", Colour: "red", Position: "normal", Speed: 105},
+				{Side: "dominant", Colour: "red", Position: "normal", Speed: 104},
+			},
+		},
+		{
+			Date: testTime2,
+			Swings: []speedtrackertypes.Swing{
+				{Side: "dominant", Colour: "green", Position: "normal", Speed: 104},
+				{Side: "dominant", Colour: "green", Position: "normal", Speed: 112},
+				{Side: "dominant", Colour: "green", Position: "normal", Speed: 116},
+				{Side: "dominant", Colour: "blue", Position: "normal", Speed: 106},
+				{Side: "dominant", Colour: "blue", Position: "normal", Speed: 111},
+				{Side: "dominant", Colour: "blue", Position: "normal", Speed: 110},
+				{Side: "dominant", Colour: "red", Position: "normal", Speed: 104},
+				{Side: "dominant", Colour: "red", Position: "normal", Speed: 107},
+				{Side: "dominant", Colour: "red", Position: "normal", Speed: 106},
+			},
+		},
+	}
+
+	newCurrentPBs, newPBsForHistory := speedtrackertypes.GetPersonalBestData(testSessions)
+
+	if len(newCurrentPBs) != 3 {
+		t.Error("PBs not set correctly")
+	}
+
+	if len(newPBsForHistory) != 6 {
+		t.Error("PB History incorrect length")
+	}
+}
