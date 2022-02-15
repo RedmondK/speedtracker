@@ -99,7 +99,7 @@ func IdentifyObsoletePBHistoryRecords(previousHistory []PersonalBestHistoryRecor
 		foundInNewHistory := false
 
 		for _, newRecord := range newHistory {
-			if newRecord.PersonalBest.Date.Equal(previousRecord.PersonalBest.Date) {
+			if newRecord.PersonalBest.Date.Equal(previousRecord.PersonalBest.Date) && SwingsHaveSameCharacteristics(newRecord.PersonalBest.Swing, previousRecord.PersonalBest.Swing) {
 				foundInNewHistory = true
 				break
 			}
